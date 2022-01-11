@@ -1,4 +1,4 @@
-//! ![Fastcoin](../../../fastcoin.png)
+//! ![Fastcoin](https://raw.githubusercontent.com/hugues31/fastcoin/master/fastcoin.png)
 //!
 //! Fastcoin is a Rust library aiming to provide a complete access to REST APIs for various
 //! crypto-currencies exchanges. All methods consume HTTPS api. This library is not intendeed to
@@ -7,8 +7,8 @@
 //! Currently only Poloniex is supported but other exchanges will be added soon.
 //!
 //! ### Exchange support:
-//! - [x] Poloniex (90%)
-//! - [x] Kraken (20%)
+//! - [x] Poloniex
+//! - [x] Kraken
 //!
 //! # WARNING
 //! This library is highly experimental at the moment. Please do not invest what you
