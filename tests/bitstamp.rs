@@ -1,8 +1,10 @@
 #[cfg(test)]
 mod bitstamp_tests {
     extern crate fastcoin;
-    use self::fastcoin::bitstamp::api::BitstampApi;
     use self::fastcoin::bitstamp::utils;
+    use self::fastcoin::bitstamp::api::BitstampApi;
+
+    use self::fastcoin::exchange::ExchangeApi;
 
     #[test]
     fn build_url_should_return_the_a_url() {
