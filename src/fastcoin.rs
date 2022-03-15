@@ -8,10 +8,7 @@ use serde_json::value::Map;
 use serde_json::value::Value;
 
 #[derive(Debug)]
-#[derive(PartialEq)]
-pub enum Fastcoin {
-    BitstampApi
-}
+pub struct Fastcoin;
 
 impl Fastcoin {
     /// Create a new FastcoinApi by providing an API key & API secret
