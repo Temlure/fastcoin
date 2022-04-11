@@ -27,6 +27,7 @@ extern crate time;
 
 pub mod fastcoin;
 pub mod exchange;
+pub mod error;
 pub mod pair;
 mod helpers;
 
