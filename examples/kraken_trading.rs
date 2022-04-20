@@ -8,7 +8,7 @@ extern crate fastcoin;
 
 use std::path::PathBuf;
 
-use fastcoin::kraken::KrakenApi;
+use fastcoin::kraken::api::KrakenApi;
 use std::error::Error;
 
 fn main() {

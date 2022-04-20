@@ -29,6 +29,7 @@ pub mod fastcoin;
 pub mod exchange;
 pub mod error;
 pub mod pair;
+pub mod types;
 mod helpers;
 
 pub mod bitstamp;
