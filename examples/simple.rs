@@ -2,7 +2,7 @@
 
 extern crate fastcoin;
 
-use fastcoin::poloniex::PoloniexApi;
+use fastcoin::poloniex::api::PoloniexApi;
 
 fn main() {
     // We create a PoloniexApi by providing API key/secret
