@@ -4,7 +4,7 @@ mod exchange_tests {
 
     #[test]
     fn tests_work() {
-//        use self::fastcoin::Exchange::ExchangeApi;
+        //        use self::fastcoin::Exchange::ExchangeApi;
         assert!(true);
     }
 }

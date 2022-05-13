@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod kraken_tests {
-    extern crate coinnect;
+    extern crate fastcoin;
 
-    use self::coinnect::kraken::api::KrakenApi;
+    use self::fastcoin::kraken::api::KrakenApi;
 
     /// IMPORTANT: Real keys are needed in order to retrieve the balance
     #[test]
