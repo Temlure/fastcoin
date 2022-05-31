@@ -53,7 +53,7 @@ mod fastcoin_tests {
     fn fastcoin_can_get_a_ticker_from_poloniex() {
         let mut api = Fastcoin::new(Exchange::Poloniex, "api_key", "api_secret", None);
         let ticker = api.ticker(Pair::BTC_ETH);
-        panic!("Price is : {}", ticker.unwrap().last_trade_price);
+
         assert!(ticker.unwrap().last_trade_price != 0.0);
     }
 
