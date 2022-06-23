@@ -2,9 +2,13 @@
 mod fastcoin_tests {
     extern crate fastcoin;
 
+    use std::path::PathBuf;
+
     use self::fastcoin::fastcoin::Fastcoin;
+    use self::fastcoin::error;
     use self::fastcoin::exchange::{Exchange, ExchangeApi};
     use self::fastcoin::pair::Pair;
+    use self::fastcoin::types::*;
 
     #[test]
     fn can_create_new_api_connection_to_bitstamp() {
@@ -71,5 +75,16 @@ mod fastcoin_tests {
         let orderbook = api.orderbook(Pair::BTC_ETH);
 
         assert_ne!(orderbook.unwrap().avg_price().unwrap(), 0.0)
+    }
+
+    #[test]
+    #[cfg_attr(not(feature = "kraken_private_tests"), ignore)]
+    fn fastcoin_can_add_order_from_kraken() {
+        let path = PathBuf::from("./keys_real.json");
+        let mut api = Fastcoin::new_from_file(Exchange::Kraken, "account_kraken", path);
+        // following request should return an error since Kraken minimum order size is 0.01
+        let orderinfo = api.add_order(OrderType::BuyLimit, Pair::BTC_EUR, 0.00001, Some(1000.58));
+
+        assert_eq!(orderinfo.unwrap_err(), error::Error::InsufficientOrderSize)
     }
 }
