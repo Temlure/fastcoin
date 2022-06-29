@@ -2,20 +2,17 @@
 mod fastcoin_tests {
     extern crate fastcoin;
 
-    use std::path::PathBuf;
-
     use self::fastcoin::fastcoin::Fastcoin;
-    use self::fastcoin::error;
     use self::fastcoin::exchange::{Exchange, ExchangeApi};
     use self::fastcoin::pair::Pair;
-    use self::fastcoin::types::*;
 
     #[test]
     fn can_create_new_api_connection_to_bitstamp() {
         let api: Box<ExchangeApi> = Fastcoin::new(Exchange::Bitstamp,
                                                   "bs_api_key",
                                                   "bs_api_secret",
-                                                  Some("bs_cust_id"));
+                                                  Some("bs_cust_id"))
+                .unwrap();
 
         assert_eq!(format!("{:?}", api),
                    "BitstampApi { last_request: 0, api_key: \"bs_api_key\", api_secret: \
@@ -39,7 +36,8 @@ mod fastcoin_tests {
         let mut api = Fastcoin::new(Exchange::Bitstamp,
                                     "bs_api_key",
                                     "bs_api_secret",
-                                    Some("bs_cust_id"));
+                                    Some("bs_cust_id"))
+                .unwrap();
         let ticker = api.ticker(Pair::BTC_USD);
 
         assert_ne!(ticker.unwrap().last_trade_price, 0.0);
@@ -47,7 +45,7 @@ mod fastcoin_tests {
 
     #[test]
     fn fastcoin_can_get_a_ticker_from_kraken() {
-        let mut api = Fastcoin::new(Exchange::Kraken, "api_key", "api_secret", None);
+        let mut api = Fastcoin::new(Exchange::Kraken, "api_key", "api_secret", None).unwrap();
         let ticker = api.ticker(Pair::BTC_EUR);
 
         assert_ne!(ticker.unwrap().last_trade_price, 0.0);
@@ -55,58 +53,27 @@ mod fastcoin_tests {
 
     #[test]
     fn fastcoin_can_get_a_ticker_from_poloniex() {
-        let mut api = Fastcoin::new(Exchange::Poloniex, "api_key", "api_secret", None);
-        let ticker = api.ticker(Pair::ETH_BTC);
+        let mut api = Fastcoin::new(Exchange::Poloniex, "api_key", "api_secret", None).unwrap();
+        let ticker = api.ticker(Pair::BTC_ETH);
 
         assert_ne!(ticker.unwrap().last_trade_price, 0.0);
     }
 
-    #[test]
-    fn fastcoin_can_get_an_orderbook_from_kraken() {
-        let mut api = Fastcoin::new(Exchange::Kraken, "api_key", "api_secret", None);
-        let orderbook = api.orderbook(Pair::BTC_EUR);
-
-        assert_ne!(orderbook.unwrap().avg_price().unwrap(), 0.0)
-    }
-
-    #[test]
-    fn fastcoin_can_get_an_orderbook_from_poloniex() {
-        let mut api = Fastcoin::new(Exchange::Poloniex, "api_key", "api_secret", None);
-        let orderbook = api.orderbook(Pair::ETH_BTC);
-
-        assert_ne!(orderbook.unwrap().avg_price().unwrap(), 0.0)
-    }
-
-    #[test]
-    #[cfg_attr(not(feature = "kraken_private_tests"), ignore)]
-    fn fastcoin_can_add_order_from_kraken() {
-        let path = PathBuf::from("./keys_real.json");
-        let mut api = Fastcoin::new_from_file(Exchange::Kraken, "account_kraken", path);
-        // following request should return an error since Kraken minimum order size is 0.01
-        let orderinfo = api.add_order(OrderType::BuyLimit, Pair::BTC_EUR, 0.00001, Some(1000.58));
-
-        assert_eq!(orderinfo.unwrap_err(), error::Error::InsufficientOrderSize)
-    }
-
-    #[test]
-    #[cfg_attr(not(feature = "poloniex_private_tests"), ignore)]
-    fn fastcoin_can_add_order_from_poloniex() {
-        let path = PathBuf::from("./keys_real.json");
-        let mut api = Fastcoin::new_from_file(Exchange::Poloniex, "account_poloniex", path);
-        // following request should return an error
-        let orderinfo = api.add_order(OrderType::BuyLimit, Pair::ETH_BTC, 0.00001, Some(1000.58));
-
-        assert_eq!(orderinfo.unwrap_err(), error::Error::InsufficientOrderSize)
-    }
-
+    // IMPORTANT: Real keys are needed in order to retrieve the balance
     #[test]
     #[cfg_attr(not(feature = "bitstamp_private_tests"), ignore)]
-    fn fastcoin_can_add_order_from_bitstamp() {
+    fn balance_should_have_usd_btc_fee() {
+        use std::path::PathBuf;
         let path = PathBuf::from("./keys_real.json");
-        let mut api = Fastcoin::new_from_file(Exchange::Bitstamp, "account_bitstamp", path);
-        // following request should return an error
-        let orderinfo = api.add_order(OrderType::BuyLimit, Pair::EUR_USD, 0.00001, Some(1000.58));
+        let mut api = Fastcoin::new_from_file(Exchange::Bitstamp, "account_bitstamp", path)
+            .unwrap();
+        let result = api.return_balances(Pair::BTC_USD).unwrap();
+        let result_looking_for_usd = result.clone();
+        let result_looking_for_btc = result.clone();
+        let result_looking_for_fee = result.clone();
 
-        assert_eq!(orderinfo.unwrap_err(), error::Error::InsufficientOrderSize)
+        assert!(result_looking_for_usd.contains_key("usd_balance"));
+        assert!(result_looking_for_btc.contains_key("btc_balance"));
+        assert!(result_looking_for_fee.contains_key("fee"));
     }
 }
