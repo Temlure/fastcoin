@@ -2,15 +2,12 @@
 //! This a more convenient and safe way to deal with the exchange since methods return a Result<>
 //! but this generic API does not provide all the functionnality that Poloniex offers.
 
-use serde_json::Value;
-use serde_json::value::Map;
-
 use exchange::ExchangeApi;
 use poloniex::api::PoloniexApi;
 
 use error::*;
 use pair::Pair;
-use types::Ticker;
+use types::*;
 use poloniex::utils;
 use helpers;
 
@@ -57,15 +54,77 @@ impl ExchangeApi for PoloniexApi {
                highest_bid: bid,
                volume: Some(vol),
            })
+    }
 
+    fn orderbook(&mut self, pair: Pair) -> Result<Orderbook> {
+        let pair_name = match utils::get_pair_string(&pair) {
+            Some(name) => name,
+            None => return Err(ErrorKind::PairUnsupported.into()),
+        };
+        let raw_response = self.return_order_book(pair_name, "1000")?; // 1000 entries max
+
+        let result = utils::parse_result(raw_response)?;
+
+        let mut ask_offers = Vec::new();
+        let mut bid_offers = Vec::new();
+
+        let ask_array = result["asks"].as_array().unwrap();
+        let bid_array = result["bids"].as_array().unwrap();
+
+        for ask in ask_array {
+            let price = ask[0].as_str().unwrap().parse::<f64>().unwrap();
+            let volume = ask[1].as_f64().unwrap();
+            ask_offers.push((price, volume));
+        }
+
+        for bid in bid_array {
+            let price = bid[0].as_str().unwrap().parse::<f64>().unwrap();
+            let volume = bid[1].as_f64().unwrap();
+            bid_offers.push((price, volume));
+        }
+
+        Ok(Orderbook {
+               timestamp: helpers::get_unix_timestamp_ms(),
+               pair: pair,
+               asks: ask_offers,
+               bids: bid_offers,
+           })
     }
-    fn return_trade_history(&mut self, _: Pair) -> Option<Map<String, Value>> {
-        unimplemented!();
-    }
-    fn return_order_book(&mut self, _: Pair) -> Option<Map<String, Value>> {
-        unimplemented!();
-    }
-    fn return_balances(&mut self, _: Pair) -> Option<Map<String, Value>> {
-        unimplemented!();
+
+    fn add_order(&mut self,
+                 order_type: OrderType,
+                 pair: Pair,
+                 quantity: Volume,
+                 price: Option<Price>)
+                 -> Result<OrderInfo> {
+        let pair_name = match utils::get_pair_string(&pair) {
+            Some(name) => name,
+            None => return Err(ErrorKind::PairUnsupported.into()),
+        };
+
+        // The trick is to use minimal (0.0) and "maximum" (999..) price to simulate market order
+        let raw_response = match order_type {
+            OrderType::BuyLimit => {
+                self.buy(pair_name,
+                         &price.unwrap().to_string(),
+                         &quantity.to_string())
+            }
+            OrderType::BuyMarket => {
+                self.buy(pair_name, "9999999999999999999", &quantity.to_string())
+            }
+            OrderType::SellLimit => {
+                self.sell(pair_name,
+                          &price.unwrap().to_string(),
+                          &quantity.to_string())
+            }
+            OrderType::SellMarket => self.sell(pair_name, "0.0", &quantity.to_string()),
+        }?;
+
+        let result = utils::parse_result(raw_response)?;
+
+        Ok(OrderInfo {
+               timestamp: helpers::get_unix_timestamp_ms(),
+               identifier: vec![result["orderNumber"].as_f64().unwrap().to_string()],
+           })
     }
 }

@@ -2,15 +2,13 @@
 //! This a more convenient and safe way to deal with the exchange since methods return a Result<>
 //! but this generic API does not provide all the functionnality that Bitstamp offers.
 
-use serde_json::Value;
-use serde_json::value::Map;
-
 use exchange::ExchangeApi;
 use bitstamp::api::BitstampApi;
 
 use error::*;
 use pair::Pair;
-use types::Ticker;
+//use bitstamp::utils;
+use types::*;
 use helpers;
 
 impl ExchangeApi for BitstampApi {
@@ -51,13 +49,35 @@ impl ExchangeApi for BitstampApi {
                volume: Some(vol),
            })
     }
-    fn return_trade_history(&mut self, _: Pair) -> Option<Map<String, Value>> {
+
+    fn orderbook(&mut self,
+                 /*pair*/
+                 _: Pair)
+                 -> Result<Orderbook> {
         unimplemented!();
     }
-    fn return_order_book(&mut self, _: Pair) -> Option<Map<String, Value>> {
-        unimplemented!();
-    }
-    fn return_balances(&mut self, _: Pair) -> Option<Map<String, Value>> {
-        unimplemented!();
+
+    fn add_order(&mut self,
+                 order_type: OrderType,
+                 pair: Pair,
+                 quantity: Volume,
+                 price: Option<Price>)
+                 -> Result<OrderInfo> {
+        //let pair_name = match utils::get_pair_string(&pair) {
+        //Some(name) => name,
+        //None => return Err(ErrorKind::PairUnsupported.into()),
+        //};
+
+        let result = match order_type {
+            OrderType::BuyLimit => self.buy_limit(pair, quantity, price.unwrap(), None, None),
+            OrderType::BuyMarket => self.buy_market(pair, quantity),
+            OrderType::SellLimit => self.sell_limit(pair, quantity, price.unwrap(), None, None),
+            OrderType::SellMarket => self.sell_market(pair, quantity),
+        };
+
+        Ok(OrderInfo {
+               timestamp: helpers::get_unix_timestamp_ms(),
+               identifier: vec![result.unwrap()["id"].as_str().unwrap().to_string()],
+           })
     }
 }

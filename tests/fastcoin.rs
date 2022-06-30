@@ -2,9 +2,13 @@
 mod fastcoin_tests {
     extern crate fastcoin;
 
+    use std::path::PathBuf;
+
     use self::fastcoin::fastcoin::Fastcoin;
+    use self::fastcoin::error::*;
     use self::fastcoin::exchange::{Exchange, ExchangeApi};
     use self::fastcoin::pair::Pair;
+    use self::fastcoin::types::*;
 
     #[test]
     fn can_create_new_api_connection_to_bitstamp() {
@@ -16,7 +20,7 @@ mod fastcoin_tests {
 
         assert_eq!(format!("{:?}", api),
                    "BitstampApi { last_request: 0, api_key: \"bs_api_key\", api_secret: \
-                    \"bs_api_secret\", customer_id: \"bs_cust_id\", http_client: Client { \
+        \"bs_api_secret\", customer_id: \"bs_cust_id\", http_client: Client { \
                     redirect_policy: FollowAll, read_timeout: None, write_timeout: None, proxy: \
                     None } }");
     }
@@ -54,26 +58,62 @@ mod fastcoin_tests {
     #[test]
     fn fastcoin_can_get_a_ticker_from_poloniex() {
         let mut api = Fastcoin::new(Exchange::Poloniex, "api_key", "api_secret", None).unwrap();
-        let ticker = api.ticker(Pair::BTC_ETH);
+        let ticker = api.ticker(Pair::ETH_BTC);
 
         assert_ne!(ticker.unwrap().last_trade_price, 0.0);
     }
 
-    // IMPORTANT: Real keys are needed in order to retrieve the balance
+    #[test]
+    fn fastcoin_can_get_an_orderbook_from_kraken() {
+        let mut api = Fastcoin::new(Exchange::Kraken, "api_key", "api_secret", None).unwrap();
+        let orderbook = api.orderbook(Pair::BTC_EUR);
+
+        assert_ne!(orderbook.unwrap().avg_price().unwrap(), 0.0)
+    }
+
+    #[test]
+    fn fastcoin_can_get_an_orderbook_from_poloniex() {
+        let mut api = Fastcoin::new(Exchange::Poloniex, "api_key", "api_secret", None).unwrap();
+        let orderbook = api.orderbook(Pair::ETH_BTC);
+
+        assert_ne!(orderbook.unwrap().avg_price().unwrap(), 0.0)
+    }
+
+    #[test]
+    #[cfg_attr(not(feature = "kraken_private_tests"), ignore)]
+    fn fastcoin_can_add_order_from_kraken() {
+        let path = PathBuf::from("./keys_real.json");
+        let mut api = Fastcoin::new_from_file(Exchange::Kraken, "account_kraken", path).unwrap();
+        // following request should return an error since Kraken minimum order size is 0.01
+        let orderinfo = api.add_order(OrderType::BuyLimit, Pair::BTC_EUR, 0.00001, Some(1000.58));
+
+        assert_eq!(orderinfo.unwrap_err().to_string(),
+                   ErrorKind::InsufficientOrderSize.to_string())
+    }
+
+    #[test]
+    #[cfg_attr(not(feature = "poloniex_private_tests"), ignore)]
+    fn fastcoin_can_add_order_from_poloniex() {
+        let path = PathBuf::from("./keys_real.json");
+        let mut api = Fastcoin::new_from_file(Exchange::Poloniex, "account_poloniex", path)
+            .unwrap();
+        // following request should return an error
+        let orderinfo = api.add_order(OrderType::BuyLimit, Pair::ETH_BTC, 0.00001, Some(1000.58));
+
+        assert_eq!(orderinfo.unwrap_err().to_string(),
+                   ErrorKind::InsufficientOrderSize.to_string())
+    }
+
     #[test]
     #[cfg_attr(not(feature = "bitstamp_private_tests"), ignore)]
-    fn balance_should_have_usd_btc_fee() {
-        use std::path::PathBuf;
+    fn fastcoin_can_add_order_from_bitstamp() {
         let path = PathBuf::from("./keys_real.json");
         let mut api = Fastcoin::new_from_file(Exchange::Bitstamp, "account_bitstamp", path)
             .unwrap();
-        let result = api.return_balances(Pair::BTC_USD).unwrap();
-        let result_looking_for_usd = result.clone();
-        let result_looking_for_btc = result.clone();
-        let result_looking_for_fee = result.clone();
+        // following request should return an error
+        let orderinfo = api.add_order(OrderType::BuyLimit, Pair::EUR_USD, 0.00001, Some(1000.58));
 
-        assert!(result_looking_for_usd.contains_key("usd_balance"));
-        assert!(result_looking_for_btc.contains_key("btc_balance"));
-        assert!(result_looking_for_fee.contains_key("fee"));
+        assert_eq!(orderinfo.unwrap_err().to_string(),
+                   ErrorKind::InsufficientOrderSize.to_string())
     }
 }

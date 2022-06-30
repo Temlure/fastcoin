@@ -66,5 +66,15 @@ error_chain!{
             description("MissingFiled")
                 display("Missing field \"{}\".", field)
         }
+
+        InsufficientFunds {
+            description("InsufficientFunds")
+                display("You haven't enough founds.")
+        }
+
+        InsufficientOrderSize {
+            description("InsufficientOrderSize")
+                display("Your order is not big enough.")
+        }
     }
 }
