@@ -8,14 +8,17 @@ extern crate fastcoin;
 
 use std::path::PathBuf;
 
-use fastcoin::kraken::api::KrakenApi;
+use fastcoin::kraken::{KrakenApi, KrakenCreds};
 use std::error::Error;
 
 fn main() {
     // We create a KrakenApi by loading a json file containing API configuration
     // (see documentation for more info)
     let path = PathBuf::from("keys_real.json");
-    let mut my_api = KrakenApi::new_from_file("account_kraken", path).unwrap();
+    let my_creds = KrakenCreds::new_from_file("account_kraken", path).unwrap();
+    let mut my_api = KrakenApi::new(my_creds).unwrap();
+
+
 
     // First, get the list of all pair we can trade with EUR€ as quote
     // You could use a simple unwrap() or use match to recover from an error for example
@@ -23,11 +26,7 @@ fn main() {
         Ok(pairs_request) => pairs_request,
         Err(err) => panic!("Error : {:?}, description : {}", err, err.description()),
     };
-    let list_all_pairs = pairs_request
-        .get("result")
-        .unwrap()
-        .as_object()
-        .unwrap();
+    let list_all_pairs = pairs_request.get("result").unwrap().as_object().unwrap();
 
     let mut list_pairs_eur = Vec::new();
 
@@ -65,11 +64,7 @@ fn main() {
 
     // Get ticker
     let ticker_request = my_api.get_ticker_information(&eur_pairs).unwrap();
-    let list_ticker = ticker_request
-        .get("result")
-        .unwrap()
-        .as_object()
-        .unwrap();
+    let list_ticker = ticker_request.get("result").unwrap().as_object().unwrap();
 
     let mut pair_to_buy = "";
     let mut pair_price_var = 0.0;

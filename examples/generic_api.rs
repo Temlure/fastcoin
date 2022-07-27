@@ -7,13 +7,15 @@
 extern crate fastcoin;
 
 use fastcoin::fastcoin::Fastcoin;
+use fastcoin::kraken::KrakenCreds;
 use fastcoin::exchange::Exchange::*;
 use fastcoin::pair::Pair::*;
 
 fn main() {
     // We create a Fastcoin Generic API
     // Since Kraken does not need customer_id field, we set it to None
-    let mut my_api = Fastcoin::new(Kraken, "api_key", "api_secret", None).unwrap();
+    let my_creds = KrakenCreds::new("my_optionnal_name", "api_key", "api_secret");
+    let mut my_api = Fastcoin::new(Kraken, my_creds).unwrap();
     let ticker = my_api.ticker(ETC_BTC);
 
     println!("ETC_BTC last trade price is {}.",
