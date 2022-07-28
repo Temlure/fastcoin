@@ -6,7 +6,6 @@
 use serde_json;
 use hyper;
 use data_encoding;
-use exchange::Exchange;
 
 error_chain!{
     types {
@@ -31,11 +30,6 @@ error_chain!{
         ServiceUnavailable(reason: String) {
             description("ServiceUnavailable")
                 display("Host could not be reached: {}.", reason)
-        }
-
-        BadCredentials {
-            description("BadCredentials")
-                display("The informations provided do not allow authentication.")
         }
 
         RateLimitExceeded {
@@ -68,11 +62,6 @@ error_chain!{
                 display("Fail to parse field \"{}\".", field)
         }
 
-        InvalidFieldValue(field: String) {
-            description("InvalidFieldValue")
-                display("Invalid value for field \"{}\".", field)
-        }
-
         MissingField(field: String) {
             description("MissingFiled")
                 display("Missing field \"{}\".", field)
@@ -91,16 +80,6 @@ error_chain!{
         MissingPrice{
             description("MissingPrice")
                 display("No price specified.")
-        }
-
-        InvalidConfigType(expected: Exchange, find: Exchange){
-            description("InvalidConfigType")
-                display("Invalid config: \nExpected: {:?}\nFind: {:?}", expected, find)
-        }
-
-        InvalidExchange(value: String) {
-            description("InvalidExchange")
-                display("Invalid exchange: \"{}\"", value)
         }
     }
 }

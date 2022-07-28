@@ -2,13 +2,12 @@
 
 extern crate fastcoin;
 
-use fastcoin::poloniex::{PoloniexApi, PoloniexCreds};
+use fastcoin::poloniex::api::PoloniexApi;
 
 fn main() {
     // We create a PoloniexApi by providing API key/secret
     // You can give an empty String if you only use public methods
-    let creds = PoloniexCreds::new("my_optionnal_name", "api_key", "api_secret");
-    let mut my_api = PoloniexApi::new(creds).unwrap();
+    let mut my_api = PoloniexApi::new("api_key", "api_secret").unwrap();
 
     // Let's look at the ticker!
     let list_coins = my_api.return_ticker().unwrap();
