@@ -7,6 +7,7 @@ mod fastcoin_tests {
     use self::fastcoin::fastcoin::Fastcoin;
     use self::fastcoin::error::*;
     use self::fastcoin::exchange::{Exchange, ExchangeApi};
+    use self::fastcoin::currency::Currency;
     use self::fastcoin::pair::Pair;
     use self::fastcoin::types::*;
 
@@ -80,19 +81,25 @@ mod fastcoin_tests {
     }
 
     #[test]
+    #[cfg_attr(not(feature = "bitstamp_private_tests"), ignore)]
     fn fastcoin_can_get_the_balances_from_bitstamp() {
-        let mut api = Fastcoin::new(Exchange::Bitstamp, "api_key", "api_secret", None).unwrap();
+        let path = PathBuf::from("./keys_real.json");
+        let mut api = Fastcoin::new_from_file(Exchange::Bitstamp, "account_bitstamp", path)
+            .unwrap();
         let balances: Balances = api.balances().unwrap();
 
         assert!(balances.len() > 0)
     }
 
     #[test]
+    #[cfg_attr(not(feature = "bitstamp_private_tests"), ignore)]
     fn fastcoin_can_get_at_least_a_possitive_balance_from_bitstamp() {
-        let mut api = Fastcoin::new(Exchange::Bitstamp, "api_key", "api_secret", None).unwrap();
+        let path = PathBuf::from("./keys_real.json");
+        let mut api = Fastcoin::new_from_file(Exchange::Bitstamp, "account_bitstamp", path)
+            .unwrap();
         let balances: Balances = api.balances().unwrap();
 
-        assert!(balances.get("BTC_USD").unwrap() > &0_f64)
+        assert!(balances.get(&Currency::BTC).unwrap() > &0_f64)
     }
 
     #[test]
