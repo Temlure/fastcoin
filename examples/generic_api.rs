@@ -9,7 +9,7 @@ extern crate fastcoin;
 use fastcoin::fastcoin::Fastcoin;
 use fastcoin::kraken::KrakenCreds;
 use fastcoin::exchange::Exchange::*;
-use fastcoin::pair::Pair::*;
+use fastcoin::types::Pair::*;
 
 fn main() {
     // We create a Fastcoin Generic API
