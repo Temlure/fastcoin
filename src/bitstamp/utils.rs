@@ -7,6 +7,9 @@ use serde_json;
 use serde_json::Value;
 use serde_json::value::Map;
 
+use std::thread;
+use std::time::Duration;
+
 use error::*;
 use helpers;
 use types::Currency;
@@ -36,6 +39,15 @@ pub fn get_pair_string(pair: &Pair) -> Option<&&str> {
 /// If the Pair is not supported, None is returned.
 pub fn get_pair_enum(pair: &str) -> Option<&Pair> {
     PAIRS_STRING.get_by_second(&pair)
+}
+
+pub fn block_or_continue(last_request: i64) {
+    let threshold = 1000; // 600 requests per 10 mins = 1 request per second
+    let delay = helpers::get_unix_timestamp_ms() - last_request;
+    if delay < threshold {
+        let duration_ms = Duration::from_millis(delay as u64);
+        thread::sleep(duration_ms);
+    }
 }
 
 pub fn build_signature(nonce: &str,
