@@ -22,12 +22,12 @@ use std::thread;
 use std::time::Duration;
 use std::str;
 
-use error::*;
-use helpers;
+use crate::error::*;
+use crate::helpers;
 
-use exchange::Exchange;
-use fastcoin::Credentials;
-use bittrex::utils;
+use crate::exchange::Exchange;
+use crate::fastcoin::Credentials;
+use crate::bittrex::utils;
 
 header! {
     #[doc(hidden)]

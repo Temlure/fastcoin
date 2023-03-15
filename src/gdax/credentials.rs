@@ -3,10 +3,10 @@
 use serde_json;
 use serde_json::Value;
 
-use fastcoin::Credentials;
-use exchange::Exchange;
-use helpers;
-use error::*;
+use crate::fastcoin::Credentials;
+use crate::exchange::Exchange;
+use crate::helpers;
+use crate::error::*;
 
 use std::collections::HashMap;
 use std::str::FromStr;
